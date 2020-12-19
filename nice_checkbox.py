@@ -60,6 +60,13 @@ class NiceCheckbox(QtWidgets.QFrame):
 
         # Draw checker
         self._paint_checker(painter, checkbox_rect)
+
+        if not self.isEnabled():
+            level = 33
+            alpha = 127
+            painter.setBrush(QtGui.QColor(level, level, level, alpha))
+            painter.drawRoundedRect(checkbox_rect, radius, radius)
+
         painter.end()
 
     def _paint_checker(self, painter, checkbox_rect):
