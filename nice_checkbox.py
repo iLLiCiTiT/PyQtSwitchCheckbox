@@ -3,6 +3,8 @@ from Qt import QtWidgets, QtCore, QtGui
 
 
 class NiceCheckbox(QtWidgets.QFrame):
+    stateChanged = QtCore.QSignal(int)
+
     def __init__(self, checked=True, parent=None):
         super(NiceCheckbox, self).__init__(parent)
         self._checked = checked
@@ -53,6 +55,11 @@ class NiceCheckbox(QtWidgets.QFrame):
         else:
             self._current_step = 0
 
+    def checkState(self):
+        if self._checked:
+            return QtCore.Qt.Checked
+        return QtCore.Qt.Unchecked
+
     def isChecked(self):
         return self._checked
 
@@ -60,6 +67,9 @@ class NiceCheckbox(QtWidgets.QFrame):
         if checked == self._checked:
             return
         self._checked = checked
+
+        self.stateChanged.emit(self.checkState())
+
         if self._animation_timer.isActive():
             self._animation_timer.stop()
 
