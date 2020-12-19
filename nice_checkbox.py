@@ -1,9 +1,9 @@
-from math import floor, sqrt, ceil
+from math import floor, sqrt
 from Qt import QtWidgets, QtCore, QtGui
 
 
 class NiceCheckbox(QtWidgets.QFrame):
-    stateChanged = QtCore.QSignal(int)
+    stateChanged = QtCore.Signal(int)
 
     def __init__(self, checked=True, parent=None):
         super(NiceCheckbox, self).__init__(parent)
