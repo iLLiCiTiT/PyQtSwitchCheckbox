@@ -50,7 +50,14 @@ class NiceCheckbox(QtWidgets.QFrame):
         if self._animation_timer.isActive():
             self._animation_timer.stop()
 
-        self._animation_timer.start(7)
+        if self.isEnabled():
+            self._animation_timer.start(7)
+        else:
+            if self._checked:
+                self._current_step = self._steps
+            else:
+                self._current_step = 0
+            self.repaint()
 
     def sizeHint(self):
         return QtCore.QSize(100, 50)
