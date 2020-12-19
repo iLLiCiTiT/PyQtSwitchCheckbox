@@ -9,9 +9,22 @@ class NiceCheckbox(QtWidgets.QFrame):
         self._checked = True
         self._under_mouse = False
 
+        self._current_step = None
+        self._steps = 10
+        self.set_steps(self._steps)
 
         self.checked_color = QtGui.QColor(67, 181, 129)
         self.unchecked_color = QtGui.QColor(114, 118, 125)
+
+    def steps(self):
+        return self._steps
+
+    def set_steps(self, steps):
+        self._steps = steps
+        if self._checked:
+            self._current_step = self._steps
+        else:
+            self._current_step = 0
 
     def setChecked(self, checked):
         if checked == self._checked:
