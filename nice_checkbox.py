@@ -5,13 +5,14 @@ from Qt import QtWidgets, QtCore, QtGui
 class NiceCheckbox(QtWidgets.QFrame):
     def __init__(self, checked=True, parent=None):
         super(NiceCheckbox, self).__init__(parent)
-        self._pressed = False
         self._checked = checked
-        self._under_mouse = False
 
         self._current_step = None
         self._steps = 10
         self.set_steps(self._steps)
+
+        self._pressed = False
+        self._under_mouse = False
 
         self._animation_timer = QtCore.QTimer(self)
         self._animation_timer.timeout.connect(self._on_animation_timeout)
@@ -34,6 +35,15 @@ class NiceCheckbox(QtWidgets.QFrame):
         return self._steps
 
     def set_steps(self, steps):
+        if steps < 1:
+            # QUESTION log message?
+            steps = 1
+
+        # Make sure animation is stopped
+        if self._animation_timer.isActive():
+            self._animation_timer.stop()
+
+        # Set steps and set current step by current checkstate
         self._steps = steps
         if self._checked:
             self._current_step = self._steps
@@ -51,8 +61,10 @@ class NiceCheckbox(QtWidgets.QFrame):
             self._animation_timer.stop()
 
         if self.isEnabled():
+            # Start animation
             self._animation_timer.start(7)
         else:
+            # Do not animate change if is disabled
             if self._checked:
                 self._current_step = self._steps
             else:
@@ -169,7 +181,11 @@ class NiceCheckbox(QtWidgets.QFrame):
         margin_size = int((checkbox_rect.height() - size) / 2)
 
         area_width = checkbox_rect.width() - (margin_size * 2) - size
-        x_offset = (area_width / self._steps) * self._current_step
+        if self._current_step == 0:
+            x_offset = 0
+        else:
+            x_offset = (area_width / self._steps) * self._current_step
+
         pos_x = checkbox_rect.x() + x_offset + margin_size
         pos_y = checkbox_rect.y() + margin_size
 
