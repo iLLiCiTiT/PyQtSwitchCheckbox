@@ -3,10 +3,10 @@ from Qt import QtWidgets, QtCore, QtGui
 
 
 class NiceCheckbox(QtWidgets.QFrame):
-    def __init__(self, parent=None):
+    def __init__(self, checked=True, parent=None):
         super(NiceCheckbox, self).__init__(parent)
         self._pressed = False
-        self._checked = True
+        self._checked = checked
         self._under_mouse = False
 
         self._current_step = None
