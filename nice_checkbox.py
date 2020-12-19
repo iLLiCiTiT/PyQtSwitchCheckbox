@@ -93,6 +93,9 @@ class NiceCheckbox(QtWidgets.QFrame):
         self.repaint()
 
     def paintEvent(self, event):
+        if self.width() < 1 or self.height() < 1:
+            return
+
         painter = QtGui.QPainter(self)
 
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
@@ -137,34 +140,40 @@ class NiceCheckbox(QtWidgets.QFrame):
         painter.end()
 
     def _draw_checker(self, painter, checkbox_rect):
-        size = checkbox_rect.height()
+        margins_ratio = 20
+        size = int(
+            checkbox_rect.height() / margins_ratio * (margins_ratio - 2)
+        )
+        margin_size = int((checkbox_rect.height() - size) / 2)
 
-        area_width = checkbox_rect.width() - size
+        area_width = checkbox_rect.width() - (margin_size * 2) - size
         x_offset = (area_width / self._steps) * self._current_step
-        pos_x = checkbox_rect.x() + x_offset
-        pos_y = checkbox_rect.y() + 1
+        pos_x = checkbox_rect.x() + x_offset + margin_size
+        pos_y = checkbox_rect.y() + margin_size
 
         checker_rect = QtCore.QRect(pos_x, pos_y, size, size)
 
-        radius = floor(size / 2)
-
         path = QtGui.QPainterPath()
-        path.addRoundedRect(checker_rect, radius, radius)
+        path.addEllipse(checker_rect)
 
+        gradient_center = QtCore.QPointF(
+            checker_rect.x() + (checker_rect.width() / 2),
+            checker_rect.y() + (checker_rect.height() / 2)
+        )
         gradient = QtGui.QRadialGradient(
-            checker_rect.center(), checker_rect.width() / 2
+            gradient_center, size / 2
         )
         gradient.setColorAt(0, QtCore.Qt.white)
         if self._under_mouse:
             if self._pressed:
-                gradient.setColorAt(0.75, QtCore.Qt.white)
-                gradient.setColorAt(0.8, QtGui.QColor(0, 0, 0, 77))
-                gradient.setColorAt(0.9, QtCore.Qt.transparent)
+                gradient.setColorAt(0.85, QtCore.Qt.white)
+                gradient.setColorAt(0.9, QtGui.QColor(0, 0, 0, 77))
+                gradient.setColorAt(1, QtCore.Qt.transparent)
             else:
-                gradient.setColorAt(0.8, QtCore.Qt.white)
-                gradient.setColorAt(0.85, QtCore.Qt.transparent)
+                gradient.setColorAt(0.9, QtCore.Qt.white)
+                gradient.setColorAt(0.95, QtCore.Qt.transparent)
         else:
-            gradient.setColorAt(0.75, QtCore.Qt.white)
-            gradient.setColorAt(0.8, QtCore.Qt.transparent)
+            gradient.setColorAt(0.85, QtCore.Qt.white)
+            gradient.setColorAt(0.9, QtCore.Qt.transparent)
 
         painter.fillPath(path, gradient)
