@@ -90,7 +90,16 @@ class NiceCheckbox(QtWidgets.QFrame):
             checker_rect.center(), checker_rect.width() / 2
         )
         gradient.setColorAt(0, QtCore.Qt.white)
-        gradient.setColorAt(0.8, QtCore.Qt.white)
-        gradient.setColorAt(0.85, QtCore.Qt.transparent)
+        if self._under_mouse:
+            if self._pressed:
+                gradient.setColorAt(0.75, QtCore.Qt.white)
+                gradient.setColorAt(0.8, QtGui.QColor(0, 0, 0, 77))
+                gradient.setColorAt(0.9, QtCore.Qt.transparent)
+            else:
+                gradient.setColorAt(0.8, QtCore.Qt.white)
+                gradient.setColorAt(0.85, QtCore.Qt.transparent)
+        else:
+            gradient.setColorAt(0.75, QtCore.Qt.white)
+            gradient.setColorAt(0.8, QtCore.Qt.transparent)
 
         painter.fillPath(path, gradient)
