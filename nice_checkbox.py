@@ -42,6 +42,8 @@ class NiceCheckbox(QtWidgets.QFrame):
     def mouseReleaseEvent(self, event):
         if self._pressed and not event.buttons() & QtCore.Qt.LeftButton:
             self._pressed = False
+            if self.rect().contains(event.pos()):
+                self.setChecked(not self._checked)
         super(NiceCheckbox, self).mouseReleaseEvent(event)
 
     def enterEvent(self, event):
