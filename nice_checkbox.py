@@ -14,3 +14,6 @@ class NiceCheckbox(QtWidgets.QFrame):
         if checked == self._checked:
             return
         self._checked = checked
+
+    def sizeHint(self):
+        return QtCore.QSize(100, 50)
