@@ -37,6 +37,7 @@ class NiceCheckbox(QtWidgets.QFrame):
     def mousePressEvent(self, event):
         if event.buttons() & QtCore.Qt.LeftButton:
             self._pressed = True
+            self.repaint()
         super(NiceCheckbox, self).mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
@@ -48,10 +49,14 @@ class NiceCheckbox(QtWidgets.QFrame):
 
     def enterEvent(self, event):
         self._under_mouse = True
+        if self.isEnabled():
+            self.repaint()
         super(NiceCheckbox, self).enterEvent(event)
 
     def leaveEvent(self, event):
         self._under_mouse = False
+        if self.isEnabled():
+            self.repaint()
         super(NiceCheckbox, self).leaveEvent(event)
 
     def paintEvent(self, event):
