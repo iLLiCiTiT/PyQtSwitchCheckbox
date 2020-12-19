@@ -7,6 +7,8 @@ class NiceCheckbox(QtWidgets.QFrame):
         super(NiceCheckbox, self).__init__(parent)
         self._checked = checked
 
+        self._animation_timer = QtCore.QTimer(self)
+
         self._current_step = None
         self._steps = 10
         self.set_steps(self._steps)
@@ -14,11 +16,10 @@ class NiceCheckbox(QtWidgets.QFrame):
         self._pressed = False
         self._under_mouse = False
 
-        self._animation_timer = QtCore.QTimer(self)
-        self._animation_timer.timeout.connect(self._on_animation_timeout)
-
         self.checked_color = QtGui.QColor(67, 181, 129)
         self.unchecked_color = QtGui.QColor(114, 118, 125)
+
+        self._animation_timer.timeout.connect(self._on_animation_timeout)
 
         self.setFixedHeight(20)
 
