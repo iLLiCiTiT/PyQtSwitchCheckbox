@@ -7,6 +7,8 @@ class NiceCheckbox(QtWidgets.QFrame):
         super(NiceCheckbox, self).__init__(parent)
         self._pressed = False
         self._checked = True
+        self._under_mouse = False
+
 
         self.checked_color = QtGui.QColor(67, 181, 129)
         self.unchecked_color = QtGui.QColor(114, 118, 125)
@@ -28,6 +30,14 @@ class NiceCheckbox(QtWidgets.QFrame):
         if self._pressed and not event.buttons() & QtCore.Qt.LeftButton:
             self._pressed = False
         super(NiceCheckbox, self).mouseReleaseEvent(event)
+
+    def enterEvent(self, event):
+        self._under_mouse = True
+        super(NiceCheckbox, self).enterEvent(event)
+
+    def leaveEvent(self, event):
+        self._under_mouse = False
+        super(NiceCheckbox, self).leaveEvent(event)
 
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
