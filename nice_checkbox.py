@@ -85,7 +85,21 @@ class NiceCheckbox(QtWidgets.QFrame):
         checkbox_rect = QtCore.QRect(event.rect())
 
         # Draw inner background
-        bg_color = self.unchecked_color
+        red_dif = self.checked_color.red() - self.unchecked_color.red()
+        green_dif = self.checked_color.green() - self.unchecked_color.green()
+        blue_dif = self.checked_color.blue() - self.unchecked_color.blue()
+
+        red = int(self.unchecked_color.red() + (
+            red_dif / self._steps * self._current_step
+        ))
+        green = int(self.unchecked_color.green() + (
+            green_dif / self._steps * self._current_step
+        ))
+        blue = int(self.unchecked_color.blue() + (
+            blue_dif / self._steps * self._current_step
+        ))
+
+        bg_color = QtGui.QColor(red, green, blue)
 
         if checkbox_rect.width() > checkbox_rect.height():
             size = checkbox_rect.height()
