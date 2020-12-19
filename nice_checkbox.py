@@ -126,7 +126,7 @@ class NiceCheckbox(QtWidgets.QFrame):
         painter.drawRoundedRect(checkbox_rect, radius, radius)
 
         # Draw checker
-        self._paint_checker(painter, checkbox_rect)
+        self._draw_checker(painter, checkbox_rect)
 
         if not self.isEnabled():
             level = 33
@@ -136,7 +136,7 @@ class NiceCheckbox(QtWidgets.QFrame):
 
         painter.end()
 
-    def _paint_checker(self, painter, checkbox_rect):
+    def _draw_checker(self, painter, checkbox_rect):
         size = checkbox_rect.height()
 
         area_width = checkbox_rect.width() - size
