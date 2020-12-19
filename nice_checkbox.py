@@ -126,15 +126,15 @@ class NiceCheckbox(QtWidgets.QFrame):
             blue_dif = (
                 self.checked_color.blue() - self.unchecked_color.blue()
             )
-            offset_ratio = self._steps * self._current_step
+            offset_ratio = self._current_step / self._steps
             red = int(self.unchecked_color.red() + (
-                red_dif / offset_ratio
+                red_dif * offset_ratio
             ))
             green = int(self.unchecked_color.green() + (
-                green_dif / offset_ratio
+                green_dif * offset_ratio
             ))
             blue = int(self.unchecked_color.blue() + (
-                blue_dif / offset_ratio
+                blue_dif * offset_ratio
             ))
 
             bg_color = QtGui.QColor(red, green, blue)
