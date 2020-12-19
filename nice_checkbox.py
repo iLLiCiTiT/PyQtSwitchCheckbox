@@ -126,10 +126,8 @@ class NiceCheckbox(QtWidgets.QFrame):
         size = checkbox_rect.height()
 
         area_width = checkbox_rect.width() - size
-        pos_x = checkbox_rect.x()
-        if self._checked:
-            pos_x += area_width
-
+        x_offset = (area_width / self._steps) * self._current_step
+        pos_x = checkbox_rect.x() + x_offset
         pos_y = checkbox_rect.y() + 1
 
         checker_rect = QtCore.QRect(pos_x, pos_y, size, size)
