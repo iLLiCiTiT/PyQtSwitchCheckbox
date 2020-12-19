@@ -17,3 +17,24 @@ class NiceCheckbox(QtWidgets.QFrame):
 
     def sizeHint(self):
         return QtCore.QSize(100, 50)
+
+    def paintEvent(self, event):
+        painter = QtGui.QPainter(self)
+
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        checkbox_rect = QtCore.QRect(event.rect())
+
+        # Draw inner background
+        bg_color = self.unchecked_color
+
+        if checkbox_rect.width() > checkbox_rect.height():
+            size = checkbox_rect.height()
+        else:
+            size = checkbox_rect.width()
+        radius = floor(size / 2)
+
+        painter.setPen(QtCore.Qt.transparent)
+        painter.setBrush(bg_color)
+        painter.drawRoundedRect(checkbox_rect, radius, radius)
+
+        painter.end()
