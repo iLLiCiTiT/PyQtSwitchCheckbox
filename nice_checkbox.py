@@ -1,4 +1,4 @@
-from math import floor
+from math import floor, sqrt, ceil
 from Qt import QtWidgets, QtCore, QtGui
 
 
@@ -19,6 +19,13 @@ class NiceCheckbox(QtWidgets.QFrame):
         self.checked_color = QtGui.QColor(67, 181, 129)
         self.unchecked_color = QtGui.QColor(114, 118, 125)
 
+        self.icon_scale_factor = sqrt(2) / 2
+
+        icon_path_stroker = QtGui.QPainterPathStroker()
+        icon_path_stroker.setCapStyle(QtCore.Qt.RoundCap)
+        icon_path_stroker.setJoinStyle(QtCore.Qt.RoundJoin)
+
+        self.icon_path_stroker = icon_path_stroker
 
         self._animation_timer.timeout.connect(self._on_animation_timeout)
 
@@ -211,3 +218,124 @@ class NiceCheckbox(QtWidgets.QFrame):
             gradient.setColorAt(0.9, QtCore.Qt.transparent)
 
         painter.fillPath(path, gradient)
+
+        self._draw_icon(painter, checker_rect)
+
+    def _draw_icon(self, painter, checker_rect):
+        self.icon_path_stroker.setWidth(checker_rect.height() / 5)
+        if self._current_step == 0:
+            self._draw_disabled_icon(painter, checker_rect)
+            return
+
+        if self._current_step == self._steps:
+            self._draw_enabled_icon(painter, checker_rect)
+            return
+
+        disabled_step = self._steps - self._current_step
+        enabled_step = self._steps - disabled_step
+        if enabled_step == disabled_step:
+            self._draw_middle_circle(painter, checker_rect)
+            return
+
+        half_steps = self._steps + 1 - ((self._steps + 1) % 2)
+        if enabled_step > disabled_step:
+            self._draw_enabled_icon(
+                painter, checker_rect, enabled_step, half_steps
+            )
+        else:
+            self._draw_disabled_icon(
+                painter, checker_rect, disabled_step, half_steps
+            )
+
+    def _draw_middle_circle(self, painter, checker_rect):
+        width = self.icon_path_stroker.width()
+        painter.drawEllipse(checker_rect.center(), width, width)
+
+    def _draw_enabled_icon(
+        self, painter, checker_rect, step=None, half_steps=None
+    ):
+        fifteenth = checker_rect.height() / 15
+        # Left point
+        p1 = QtCore.QPoint(
+            checker_rect.x() + (5 * fifteenth),
+            checker_rect.y() + (9 * fifteenth)
+        )
+        # Middle bottom point
+        p2 = QtCore.QPoint(
+            checker_rect.center().x(),
+            checker_rect.y() + (11 * fifteenth)
+        )
+        # Top right point
+        p3 = QtCore.QPoint(
+            checker_rect.x() + (10 * fifteenth),
+            checker_rect.y() + (5 * fifteenth)
+        )
+        if step is not None:
+            multiplier = (half_steps - step)
+
+            p1c = p1 - checker_rect.center()
+            p2c = p2 - checker_rect.center()
+            p3c = p3 - checker_rect.center()
+
+            p1o = QtCore.QPoint(
+                (p1c.x() / half_steps) * multiplier,
+                (p1c.y() / half_steps) * multiplier
+            )
+            p2o = QtCore.QPoint(
+                (p2c.x() / half_steps) * multiplier,
+                (p2c.y() / half_steps) * multiplier
+            )
+            p3o = QtCore.QPoint(
+                (p3c.x() / half_steps) * multiplier,
+                (p3c.y() / half_steps) * multiplier
+            )
+
+            p1 -= p1o
+            p2 -= p2o
+            p3 -= p3o
+
+        path = QtGui.QPainterPath(p1)
+        path.lineTo(p2)
+        path.lineTo(p3)
+
+        stroked_path = self.icon_path_stroker.createStroke(path)
+        painter.drawPath(stroked_path)
+
+    def _draw_disabled_icon(
+        self, painter, checker_rect, step=None, half_steps=None
+    ):
+        center_point = QtCore.QPointF(
+            checker_rect.width() / 2, checker_rect.height() / 2
+        )
+        offset = (
+            (center_point + QtCore.QPointF(0, 0)) / 2
+        ).x() / 4 * 5
+        if step is not None:
+            diff = center_point.x() - offset
+            diff_offset = (diff / half_steps) * (half_steps - step)
+            offset += diff_offset
+
+        line1_p1 = QtCore.QPointF(
+            checker_rect.topLeft().x() + offset,
+            checker_rect.topLeft().y() + offset,
+        )
+        line1_p2 = QtCore.QPointF(
+            checker_rect.bottomRight().x() - offset,
+            checker_rect.bottomRight().y() - offset
+        )
+        line2_p1 = QtCore.QPointF(
+            checker_rect.bottomLeft().x() + offset,
+            checker_rect.bottomLeft().y() - offset
+        )
+        line2_p2 = QtCore.QPointF(
+            checker_rect.topRight().x() - offset,
+            checker_rect.topRight().y() + offset
+        )
+        path = QtGui.QPainterPath()
+        path.moveTo(line1_p1)
+        path.lineTo(line1_p2)
+        path.moveTo(line2_p1)
+        path.lineTo(line2_p2)
+
+        stroked_path = self.icon_path_stroker.createStroke(path)
+        painter.drawPath(stroked_path)
