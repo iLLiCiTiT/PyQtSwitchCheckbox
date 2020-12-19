@@ -37,4 +37,32 @@ class NiceCheckbox(QtWidgets.QFrame):
         painter.setBrush(bg_color)
         painter.drawRoundedRect(checkbox_rect, radius, radius)
 
+        # Draw checker
+        self._paint_checker(painter, checkbox_rect)
         painter.end()
+
+    def _paint_checker(self, painter, checkbox_rect):
+        size = checkbox_rect.height()
+
+        area_width = checkbox_rect.width() - size
+        pos_x = checkbox_rect.x()
+        if self._checked:
+            pos_x += area_width
+
+        pos_y = checkbox_rect.y() + 1
+
+        checker_rect = QtCore.QRect(pos_x, pos_y, size, size)
+
+        radius = floor(size / 2)
+
+        path = QtGui.QPainterPath()
+        path.addRoundedRect(checker_rect, radius, radius)
+
+        gradient = QtGui.QRadialGradient(
+            checker_rect.center(), checker_rect.width() / 2
+        )
+        gradient.setColorAt(0, QtCore.Qt.white)
+        gradient.setColorAt(0.8, QtCore.Qt.white)
+        gradient.setColorAt(0.85, QtCore.Qt.transparent)
+
+        painter.fillPath(path, gradient)
