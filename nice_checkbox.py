@@ -90,6 +90,15 @@ class NiceCheckbox(QtWidgets.QFrame):
                 self.setChecked(not self._checked)
         super(NiceCheckbox, self).mouseReleaseEvent(event)
 
+    def mouseMoveEvent(self, event):
+        if self._pressed:
+            under_mouse = self.rect().contains(event.pos())
+            if under_mouse != self._under_mouse:
+                self._under_mouse = under_mouse
+                self.repaint()
+
+        super(NiceCheckbox, self).mouseMoveEvent(event)
+
     def enterEvent(self, event):
         self._under_mouse = True
         if self.isEnabled():
