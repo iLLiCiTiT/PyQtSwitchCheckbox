@@ -29,6 +29,9 @@ class NiceCheckbox(QtWidgets.QFrame):
         else:
             self._current_step = 0
 
+    def isChecked(self):
+        return self._checked
+
     def setChecked(self, checked):
         if checked == self._checked:
             return
