@@ -13,6 +13,9 @@ class NiceCheckbox(QtWidgets.QFrame):
         self._steps = 10
         self.set_steps(self._steps)
 
+        self._animation_timer = QtCore.QTimer(self)
+        self._animation_timer.timeout.connect(self._on_animation_timeout)
+
         self.checked_color = QtGui.QColor(67, 181, 129)
         self.unchecked_color = QtGui.QColor(114, 118, 125)
 
@@ -30,6 +33,10 @@ class NiceCheckbox(QtWidgets.QFrame):
         if checked == self._checked:
             return
         self._checked = checked
+        if self._animation_timer.isActive():
+            self._animation_timer.stop()
+
+        self._animation_timer.start(7)
 
     def sizeHint(self):
         return QtCore.QSize(100, 50)
@@ -58,6 +65,18 @@ class NiceCheckbox(QtWidgets.QFrame):
         if self.isEnabled():
             self.repaint()
         super(NiceCheckbox, self).leaveEvent(event)
+
+    def _on_animation_timeout(self):
+        if self._checked:
+            self._current_step += 1
+            if self._current_step == self._steps:
+                self._animation_timer.stop()
+        else:
+            self._current_step -= 1
+            if self._current_step == 0:
+                self._animation_timer.stop()
+
+        self.repaint()
 
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
