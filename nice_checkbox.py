@@ -5,6 +5,7 @@ from Qt import QtWidgets, QtCore, QtGui
 class NiceCheckbox(QtWidgets.QFrame):
     def __init__(self, parent=None):
         super(NiceCheckbox, self).__init__(parent)
+        self._pressed = False
         self._checked = True
 
         self.checked_color = QtGui.QColor(67, 181, 129)
@@ -17,6 +18,16 @@ class NiceCheckbox(QtWidgets.QFrame):
 
     def sizeHint(self):
         return QtCore.QSize(100, 50)
+
+    def mousePressEvent(self, event):
+        if event.buttons() & QtCore.Qt.LeftButton:
+            self._pressed = True
+        super(NiceCheckbox, self).mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        if self._pressed and not event.buttons() & QtCore.Qt.LeftButton:
+            self._pressed = False
+        super(NiceCheckbox, self).mouseReleaseEvent(event)
 
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
