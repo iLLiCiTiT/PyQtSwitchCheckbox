@@ -32,6 +32,11 @@ class NiceCheckbox(QtWidgets.QFrame):
         super(NiceCheckbox, self).setFixedWidth(width)
         super(NiceCheckbox, self).setFixedHeight(width / 2)
 
+    def resizeEvent(self, event):
+        new_size = QtCore.QSize(2, 1)
+        new_size.scale(event.size(), QtCore.Qt.KeepAspectRatio)
+        self.resize(new_size)
+
     def steps(self):
         return self._steps
 
