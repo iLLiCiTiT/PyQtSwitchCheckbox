@@ -19,6 +19,17 @@ class NiceCheckbox(QtWidgets.QFrame):
         self.checked_color = QtGui.QColor(67, 181, 129)
         self.unchecked_color = QtGui.QColor(114, 118, 125)
 
+        self.setFixedHeight(20)
+
+    def setFixedHeight(self, height):
+        super(NiceCheckbox, self).setFixedHeight(height)
+        super(NiceCheckbox, self).setFixedWidth(2 * height)
+
+    def setFixedWidth(self, width):
+        width = width - (width % 2)
+        super(NiceCheckbox, self).setFixedWidth(width)
+        super(NiceCheckbox, self).setFixedHeight(width / 2)
+
     def steps(self):
         return self._steps
 
