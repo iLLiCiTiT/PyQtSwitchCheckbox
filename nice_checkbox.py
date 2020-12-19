@@ -102,21 +102,35 @@ class NiceCheckbox(QtWidgets.QFrame):
         checkbox_rect = QtCore.QRect(event.rect())
 
         # Draw inner background
-        red_dif = self.checked_color.red() - self.unchecked_color.red()
-        green_dif = self.checked_color.green() - self.unchecked_color.green()
-        blue_dif = self.checked_color.blue() - self.unchecked_color.blue()
+        if self._current_step == self._steps:
+            bg_color = self.checked_color
 
-        red = int(self.unchecked_color.red() + (
-            red_dif / self._steps * self._current_step
-        ))
-        green = int(self.unchecked_color.green() + (
-            green_dif / self._steps * self._current_step
-        ))
-        blue = int(self.unchecked_color.blue() + (
-            blue_dif / self._steps * self._current_step
-        ))
+        elif self._current_step == 0:
+            bg_color = self.unchecked_color
 
-        bg_color = QtGui.QColor(red, green, blue)
+        else:
+            # Animation bg
+            red_dif = (
+                self.checked_color.red() - self.unchecked_color.red()
+            )
+            green_dif = (
+                self.checked_color.green() - self.unchecked_color.green()
+            )
+            blue_dif = (
+                self.checked_color.blue() - self.unchecked_color.blue()
+            )
+            offset_ratio = self._steps * self._current_step
+            red = int(self.unchecked_color.red() + (
+                red_dif / offset_ratio
+            ))
+            green = int(self.unchecked_color.green() + (
+                green_dif / offset_ratio
+            ))
+            blue = int(self.unchecked_color.blue() + (
+                blue_dif / offset_ratio
+            ))
+
+            bg_color = QtGui.QColor(red, green, blue)
 
         if checkbox_rect.width() > checkbox_rect.height():
             size = checkbox_rect.height()
@@ -131,6 +145,7 @@ class NiceCheckbox(QtWidgets.QFrame):
         # Draw checker
         self._draw_checker(painter, checkbox_rect)
 
+        # Draw shadow overlay
         if not self.isEnabled():
             level = 33
             alpha = 127
