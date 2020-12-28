@@ -1,25 +1,33 @@
-from math import floor, sqrt
+from math import floor, sqrt, ceil
 from Qt import QtWidgets, QtCore, QtGui
 
 
 class NiceCheckbox(QtWidgets.QFrame):
     stateChanged = QtCore.Signal(int)
 
-    def __init__(self, checked=True, parent=None):
+    def __init__(self, checked=True, draw_icons=False, parent=None):
         super(NiceCheckbox, self).__init__(parent)
         self._checked = checked
+
+        self._draw_icons = draw_icons
 
         self._animation_timer = QtCore.QTimer(self)
 
         self._current_step = None
-        self._steps = 10
+        self._steps = 20
         self.set_steps(self._steps)
 
         self._pressed = False
         self._under_mouse = False
 
         self.checked_color = QtGui.QColor(67, 181, 129)
-        self.unchecked_color = QtGui.QColor(114, 118, 125)
+        self.unchecked_color = QtGui.QColor(230, 230, 230)
+
+        self.checker_checked_color = QtGui.QColor(255, 255, 255)
+        self.checker_unchecked_color = QtGui.QColor(119, 131, 126)
+
+        self.border_color = QtGui.QColor(44, 44, 44)
+        self.border_color_hover = QtGui.QColor(119, 131, 126)
 
         self.icon_scale_factor = sqrt(2) / 2
 
@@ -31,10 +39,29 @@ class NiceCheckbox(QtWidgets.QFrame):
 
         self._animation_timer.timeout.connect(self._on_animation_timeout)
 
+    def set_draw_icons(self, draw_icons=None):
+        if draw_icons is None:
+            draw_icons = not self._draw_icons
+
+        if draw_icons == self._draw_icons:
+            return
+
+        self._draw_icons = draw_icons
+        self.repaint()
+
     def resizeEvent(self, event):
         new_size = QtCore.QSize(2, 1)
         new_size.scale(event.size(), QtCore.Qt.KeepAspectRatio)
         self.resize(new_size)
+
+    def setFixedHeight(self, height):
+        super(NiceCheckbox, self).setFixedHeight(height)
+        super(NiceCheckbox, self).setFixedWidth(height * 2)
+
+    def setFixedWidth(self, width):
+        height = (width - (width % 2)) / 2
+        super(NiceCheckbox, self).setFixedHeight(height)
+        super(NiceCheckbox, self).setFixedWidth(height * 2)
 
     def steps(self):
         return self._steps
@@ -133,6 +160,29 @@ class NiceCheckbox(QtWidgets.QFrame):
 
         self.repaint()
 
+    @staticmethod
+    def steped_color(color1, color2, offset_ratio):
+        red_dif = (
+            color1.red() - color2.red()
+        )
+        green_dif = (
+            color1.green() - color2.green()
+        )
+        blue_dif = (
+            color1.blue() - color2.blue()
+        )
+        red = int(color2.red() + (
+            red_dif * offset_ratio
+        ))
+        green = int(color2.green() + (
+            green_dif * offset_ratio
+        ))
+        blue = int(color2.blue() + (
+            blue_dif * offset_ratio
+        ))
+
+        return QtGui.QColor(red, green, blue)
+
     def paintEvent(self, event):
         if self.width() < 1 or self.height() < 1:
             return
@@ -142,103 +192,90 @@ class NiceCheckbox(QtWidgets.QFrame):
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
         checkbox_rect = QtCore.QRect(event.rect())
 
+        if self.isEnabled() and self._under_mouse:
+            pen_color = self.border_color_hover
+        else:
+            pen_color = self.border_color
+
         # Draw inner background
         if self._current_step == self._steps:
             bg_color = self.checked_color
+            checker_color = self.checker_checked_color
 
         elif self._current_step == 0:
             bg_color = self.unchecked_color
+            checker_color = self.checker_unchecked_color
 
         else:
-            # Animation bg
-            red_dif = (
-                self.checked_color.red() - self.unchecked_color.red()
-            )
-            green_dif = (
-                self.checked_color.green() - self.unchecked_color.green()
-            )
-            blue_dif = (
-                self.checked_color.blue() - self.unchecked_color.blue()
-            )
             offset_ratio = self._current_step / self._steps
-            red = int(self.unchecked_color.red() + (
-                red_dif * offset_ratio
-            ))
-            green = int(self.unchecked_color.green() + (
-                green_dif * offset_ratio
-            ))
-            blue = int(self.unchecked_color.blue() + (
-                blue_dif * offset_ratio
-            ))
+            # Animation bg
+            bg_color = self.steped_color(
+                self.checked_color,
+                self.unchecked_color,
+                offset_ratio
+            )
+            checker_color = self.steped_color(
+                self.checker_checked_color,
+                self.checker_unchecked_color,
+                offset_ratio
+            )
 
-            bg_color = QtGui.QColor(red, green, blue)
+        margins_ratio = 20
+        size_without_margins = int(
+            checkbox_rect.height() / margins_ratio * (margins_ratio - 2)
+        )
+        margin_size_c = ceil(checkbox_rect.height() - size_without_margins) / 2
+        checkbox_rect = QtCore.QRect(
+            checkbox_rect.x() + margin_size_c,
+            checkbox_rect.y() + margin_size_c,
+            checkbox_rect.width() - (margin_size_c * 2),
+            checkbox_rect.height() - (margin_size_c * 2)
+        )
 
         if checkbox_rect.width() > checkbox_rect.height():
-            size = checkbox_rect.height()
+            radius = floor(checkbox_rect.height() / 2)
         else:
-            size = checkbox_rect.width()
-        radius = floor(size / 2)
+            radius = floor(checkbox_rect.width() / 2)
 
-        painter.setPen(QtCore.Qt.transparent)
+        pen = QtGui.QPen(pen_color, margin_size_c)
+        painter.setPen(pen)
         painter.setBrush(bg_color)
         painter.drawRoundedRect(checkbox_rect, radius, radius)
 
         # Draw checker
-        self._draw_checker(painter, checkbox_rect)
-
-        # Draw shadow overlay
-        if not self.isEnabled():
-            level = 33
-            alpha = 127
-            painter.setBrush(QtGui.QColor(level, level, level, alpha))
-            painter.drawRoundedRect(checkbox_rect, radius, radius)
-
-        painter.end()
-
-    def _draw_checker(self, painter, checkbox_rect):
-        margins_ratio = 20
-        size = int(
-            checkbox_rect.height() / margins_ratio * (margins_ratio - 2)
+        checker_size = size_without_margins - (margin_size_c * 2)
+        area_width = (
+            checkbox_rect.width()
+            - (margin_size_c * 2)
+            - checker_size
         )
-        margin_size = int((checkbox_rect.height() - size) / 2)
-
-        area_width = checkbox_rect.width() - (margin_size * 2) - size
         if self._current_step == 0:
             x_offset = 0
         else:
             x_offset = (area_width / self._steps) * self._current_step
 
-        pos_x = checkbox_rect.x() + x_offset + margin_size
-        pos_y = checkbox_rect.y() + margin_size
+        pos_x = checkbox_rect.x() + x_offset + margin_size_c
+        pos_y = checkbox_rect.y() + margin_size_c
 
-        checker_rect = QtCore.QRect(pos_x, pos_y, size, size)
+        checker_rect = QtCore.QRect(pos_x, pos_y, checker_size, checker_size)
 
-        path = QtGui.QPainterPath()
-        path.addEllipse(checker_rect)
+        painter.setPen(QtCore.Qt.transparent)
+        painter.setBrush(checker_color)
+        painter.drawEllipse(checker_rect)
 
-        gradient_center = QtCore.QPointF(
-            checker_rect.x() + (checker_rect.width() / 2),
-            checker_rect.y() + (checker_rect.height() / 2)
-        )
-        gradient = QtGui.QRadialGradient(
-            gradient_center, size / 2
-        )
-        gradient.setColorAt(0, QtCore.Qt.white)
-        if self._under_mouse:
-            if self._pressed:
-                gradient.setColorAt(0.85, QtCore.Qt.white)
-                gradient.setColorAt(0.9, QtGui.QColor(0, 0, 0, 77))
-                gradient.setColorAt(1, QtCore.Qt.transparent)
-            else:
-                gradient.setColorAt(0.9, QtCore.Qt.white)
-                gradient.setColorAt(0.95, QtCore.Qt.transparent)
-        else:
-            gradient.setColorAt(0.85, QtCore.Qt.white)
-            gradient.setColorAt(0.9, QtCore.Qt.transparent)
+        if self._draw_icons:
+            painter.setBrush(bg_color)
+            self._draw_icon(painter, checker_rect)
 
-        painter.fillPath(path, gradient)
+        # Draw shadow overlay
+        if not self.isEnabled():
+            level = 33
+            alpha = 127
+            painter.setPen(QtCore.Qt.transparent)
+            painter.setBrush(QtGui.QColor(level, level, level, alpha))
+            painter.drawRoundedRect(checkbox_rect, radius, radius)
 
-        self._draw_icon(painter, checker_rect)
+        painter.end()
 
     def _draw_icon(self, painter, checker_rect):
         self.icon_path_stroker.setWidth(checker_rect.height() / 5)
