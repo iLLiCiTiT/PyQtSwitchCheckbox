@@ -16,6 +16,12 @@ class NiceCheckbox(QtWidgets.QFrame):
     ):
         super(NiceCheckbox, self).__init__(parent)
         self._checked = checked
+        if checked:
+            checkstate = QtCore.Qt.Checked
+        else:
+            checkstate = QtCore.Qt.Unchecked
+        self._checkstate = checkstate
+        self._is_tristate = False
 
         self._draw_icons = draw_icons
 
@@ -28,7 +34,8 @@ class NiceCheckbox(QtWidgets.QFrame):
         self._fixed_height_set = False
 
         self._current_step = None
-        self._steps = 20
+        self._steps = 21
+        self._middle_step = 11
         self.set_steps(self._steps)
 
         self._pressed = False
@@ -55,6 +62,11 @@ class NiceCheckbox(QtWidgets.QFrame):
         self._animation_timer.timeout.connect(self._on_animation_timeout)
 
         self._base_size = QtCore.QSize(90, 50)
+
+    def setTristate(self, tristate=True):
+        if self._is_tristate == tristate:
+            return
+        self._is_tristate = tristate
 
     def set_draw_icons(self, draw_icons=None):
         if draw_icons is None:
@@ -117,9 +129,8 @@ class NiceCheckbox(QtWidgets.QFrame):
         return self._steps
 
     def set_steps(self, steps):
-        if steps < 1:
-            # QUESTION log message?
-            steps = 1
+        if steps < 2:
+            steps = 2
 
         # Make sure animation is stopped
         if self._animation_timer.isActive():
@@ -127,23 +138,30 @@ class NiceCheckbox(QtWidgets.QFrame):
 
         # Set steps and set current step by current checkstate
         self._steps = steps
-        if self._checked:
+        diff = steps % 2
+        self._middle_step = (int(steps - diff) / 2) + diff
+        if self._checkstate == QtCore.Qt.Checked:
             self._current_step = self._steps
-        else:
+        elif self._checkstate == QtCore.Qt.Unchecked:
             self._current_step = 0
+        else:
+            self._current_step = self._middle_step
 
     def checkState(self):
-        if self._checked:
-            return QtCore.Qt.Checked
-        return QtCore.Qt.Unchecked
+        return self._checkstate
 
     def isChecked(self):
         return self._checked
 
-    def setChecked(self, checked):
-        if checked == self._checked:
+    def setCheckState(self, state):
+        if self._checkstate == state:
             return
-        self._checked = checked
+
+        self._checkstate = state
+        if state == QtCore.Qt.Checked:
+            self._checked = True
+        elif state == QtCore.Qt.Unchecked:
+            self._checked = False
 
         self.stateChanged.emit(self.checkState())
 
@@ -155,11 +173,37 @@ class NiceCheckbox(QtWidgets.QFrame):
             self._animation_timer.start(self._animation_timeout)
         else:
             # Do not animate change if is disabled
-            if self._checked:
+            if state == QtCore.Qt.Checked:
                 self._current_step = self._steps
-            else:
+            elif state == QtCore.Qt.Unchecked:
                 self._current_step = 0
+            else:
+                self._current_step = self._middle_step
             self.repaint()
+
+    def setChecked(self, checked):
+        if checked == self._checked:
+            return
+
+        if checked:
+            checkstate = QtCore.Qt.Checked
+        else:
+            checkstate = QtCore.Qt.Unchecked
+
+        self.setCheckState(checkstate)
+
+    def nextCheckState(self):
+        if self._checkstate == QtCore.Qt.Unchecked:
+            if self._is_tristate:
+                return QtCore.Qt.PartiallyChecked
+            return QtCore.Qt.Checked
+
+        if self._checkstate == QtCore.Qt.Checked:
+            return QtCore.Qt.Unchecked
+
+        if self._checked:
+            return QtCore.Qt.Unchecked
+        return QtCore.Qt.Checked
 
     def sizeHint(self):
         return self._base_size
@@ -174,7 +218,7 @@ class NiceCheckbox(QtWidgets.QFrame):
         if self._pressed and not event.buttons() & QtCore.Qt.LeftButton:
             self._pressed = False
             if self.rect().contains(event.pos()):
-                self.setChecked(not self._checked)
+                self.setCheckState(self.nextCheckState())
         super(NiceCheckbox, self).mouseReleaseEvent(event)
 
     def mouseMoveEvent(self, event):
@@ -199,13 +243,24 @@ class NiceCheckbox(QtWidgets.QFrame):
         super(NiceCheckbox, self).leaveEvent(event)
 
     def _on_animation_timeout(self):
-        if self._checked:
+        if self._checkstate == QtCore.Qt.Checked:
             self._current_step += 1
             if self._current_step == self._steps:
                 self._animation_timer.stop()
-        else:
+
+        elif self._checkstate == QtCore.Qt.Unchecked:
             self._current_step -= 1
             if self._current_step == 0:
+                self._animation_timer.stop()
+
+        else:
+            if self._current_step < self._middle_step:
+                self._current_step += 1
+
+            elif self._current_step > self._middle_step:
+                self._current_step -= 1
+
+            if self._current_step == self._middle_step:
                 self._animation_timer.stop()
 
         self.repaint()
@@ -378,11 +433,11 @@ class NiceCheckbox(QtWidgets.QFrame):
         if self._current_step == 0:
             return self._get_disabled_icon_path(painter, checker_rect)
 
-        disabled_step = self._steps - self._current_step
-        enabled_step = self._steps - disabled_step
-        if enabled_step == disabled_step:
+        if self._current_step == self._middle_step:
             return self._get_middle_circle_path(painter, checker_rect)
 
+        disabled_step = self._steps - self._current_step
+        enabled_step = self._steps - disabled_step
         half_steps = self._steps + 1 - ((self._steps + 1) % 2)
         if enabled_step > disabled_step:
             return self._get_enabled_icon_path(
