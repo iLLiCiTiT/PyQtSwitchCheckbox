@@ -52,7 +52,7 @@ class NiceCheckbox(QtWidgets.QFrame):
         self.repaint()
 
     def resizeEvent(self, event):
-        new_size = QtCore.QSize(2, 1)
+        new_size = QtCore.QSize(9, 5)
         new_size.scale(event.size(), QtCore.Qt.KeepAspectRatio)
         self.resize(new_size)
 
@@ -118,7 +118,7 @@ class NiceCheckbox(QtWidgets.QFrame):
             self.repaint()
 
     def sizeHint(self):
-        return QtCore.QSize(100, 50)
+        return QtCore.QSize(80, 50)
 
     def mousePressEvent(self, event):
         if event.buttons() & QtCore.Qt.LeftButton:
