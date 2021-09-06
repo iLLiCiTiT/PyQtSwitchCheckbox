@@ -35,10 +35,11 @@ class NiceCheckbox(QtWidgets.QFrame):
         self._under_mouse = False
 
         self.checked_bg_color = QtGui.QColor(67, 181, 129)
+        self.unchecked_bg_color = QtGui.QColor(230, 230, 230)
         self.unchecked_bg_color = QtGui.QColor(79, 79, 79)
 
         self.checker_checked_color = QtGui.QColor(255, 255, 255)
-        self.checker_unchecked_color = QtGui.QColor(119, 131, 126)
+        self.checker_unchecked_color = self.checker_checked_color
 
         self.border_color = QtGui.QColor(44, 44, 44)
         self.border_color_hover = QtGui.QColor(119, 131, 126)
