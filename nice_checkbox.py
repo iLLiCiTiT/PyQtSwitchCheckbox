@@ -29,8 +29,8 @@ class NiceCheckbox(QtWidgets.QFrame):
         self._pressed = False
         self._under_mouse = False
 
-        self.checked_color = QtGui.QColor(67, 181, 129)
-        self.unchecked_color = QtGui.QColor(230, 230, 230)
+        self.checked_bg_color = QtGui.QColor(67, 181, 129)
+        self.unchecked_bg_color = QtGui.QColor(79, 79, 79)
 
         self.checker_checked_color = QtGui.QColor(255, 255, 255)
         self.checker_unchecked_color = QtGui.QColor(119, 131, 126)
@@ -212,19 +212,19 @@ class NiceCheckbox(QtWidgets.QFrame):
 
         # Draw inner background
         if self._current_step == self._steps:
-            bg_color = self.checked_color
+            bg_color = self.checked_bg_color
             checker_color = self.checker_checked_color
 
         elif self._current_step == 0:
-            bg_color = self.unchecked_color
+            bg_color = self.unchecked_bg_color
             checker_color = self.checker_unchecked_color
 
         else:
             offset_ratio = self._current_step / self._steps
             # Animation bg
             bg_color = self.steped_color(
-                self.checked_color,
-                self.unchecked_color,
+                self.checked_bg_color,
+                self.unchecked_bg_color,
                 offset_ratio
             )
             checker_color = self.steped_color(
