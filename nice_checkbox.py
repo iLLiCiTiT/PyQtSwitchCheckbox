@@ -239,7 +239,7 @@ class NiceCheckbox(QtWidgets.QFrame):
         painter = QtGui.QPainter(self)
 
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
-        checkbox_rect = QtCore.QRect(event.rect())
+        frame_rect = QtCore.QRect(event.rect())
 
         if self.isEnabled() and self._under_mouse:
             pen_color = self.border_color_hover
@@ -271,14 +271,14 @@ class NiceCheckbox(QtWidgets.QFrame):
 
         margins_ratio = 20
         size_without_margins = int(
-            checkbox_rect.height() / margins_ratio * (margins_ratio - 2)
+            frame_rect.height() / margins_ratio * (margins_ratio - 2)
         )
-        margin_size_c = ceil(checkbox_rect.height() - size_without_margins) / 2
+        margin_size_c = ceil(frame_rect.height() - size_without_margins) / 2
         checkbox_rect = QtCore.QRect(
-            checkbox_rect.x() + margin_size_c,
-            checkbox_rect.y() + margin_size_c,
-            checkbox_rect.width() - (margin_size_c * 2),
-            checkbox_rect.height() - (margin_size_c * 2)
+            frame_rect.x() + margin_size_c,
+            frame_rect.y() + margin_size_c,
+            frame_rect.width() - (margin_size_c * 2),
+            frame_rect.height() - (margin_size_c * 2)
         )
 
         if checkbox_rect.width() > checkbox_rect.height():
@@ -286,8 +286,7 @@ class NiceCheckbox(QtWidgets.QFrame):
         else:
             radius = floor(checkbox_rect.width() / 2)
 
-        pen = QtGui.QPen(pen_color, margin_size_c)
-        painter.setPen(pen)
+        painter.setPen(QtCore.Qt.transparent)
         painter.setBrush(bg_color)
         painter.drawRoundedRect(checkbox_rect, radius, radius)
 
@@ -308,7 +307,31 @@ class NiceCheckbox(QtWidgets.QFrame):
 
         checker_rect = QtCore.QRect(pos_x, pos_y, checker_size, checker_size)
 
+        shadow_x = checker_rect.x()
+        shadow_y = checker_rect.y() + margin_size_c
+        shadow_size = min(
+            frame_rect.right() - shadow_x,
+            frame_rect.bottom() - shadow_y,
+            checker_size + (2 * margin_size_c)
+        )
+        shadow_rect = QtCore.QRect(
+            checker_rect.x(),
+            shadow_y,
+            shadow_size,
+            shadow_size
+        )
+
+        shadow_brush = QtGui.QRadialGradient(
+            shadow_rect.center(),
+            shadow_rect.height() / 2
+        )
+        shadow_brush.setColorAt(0.6, QtCore.Qt.black)
+        shadow_brush.setColorAt(1, QtCore.Qt.transparent)
+
         painter.setPen(QtCore.Qt.transparent)
+        painter.setBrush(shadow_brush)
+        painter.drawEllipse(shadow_rect)
+
         painter.setBrush(checker_color)
         painter.drawEllipse(checker_rect)
 
