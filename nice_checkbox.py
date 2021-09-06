@@ -1,3 +1,8 @@
+import sys
+openpype_dir = r"C:\Users\jakub.trllo\Desktop\pype\pype3"
+sys.path.append(
+    r"{}\.venv\Lib\site-packages".format(openpype_dir)
+)
 from math import floor, sqrt, ceil
 from Qt import QtWidgets, QtCore, QtGui
 
@@ -12,6 +17,8 @@ class NiceCheckbox(QtWidgets.QFrame):
         self._draw_icons = draw_icons
 
         self._animation_timer = QtCore.QTimer(self)
+        self._animation_timeout = 6
+
         self._fixed_width_set = False
         self._fixed_height_set = False
 
@@ -108,7 +115,7 @@ class NiceCheckbox(QtWidgets.QFrame):
 
         if self.isEnabled():
             # Start animation
-            self._animation_timer.start(7)
+            self._animation_timer.start(self._animation_timeout)
         else:
             # Do not animate change if is disabled
             if self._checked:
