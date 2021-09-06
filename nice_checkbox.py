@@ -355,7 +355,8 @@ class NiceCheckbox(QtWidgets.QFrame):
 
         if self._draw_icons:
             painter.setBrush(bg_color)
-            self._draw_icon(painter, checker_rect)
+            icon_path = self._get_icon_path(painter, checker_rect)
+            painter.drawPath(icon_path)
 
         # Draw shadow overlay
         if not self.isEnabled():
@@ -367,37 +368,38 @@ class NiceCheckbox(QtWidgets.QFrame):
 
         painter.end()
 
-    def _draw_icon(self, painter, checker_rect):
+    def _get_icon_path(self, painter, checker_rect):
         self.icon_path_stroker.setWidth(checker_rect.height() / 5)
-        if self._current_step == 0:
-            self._draw_disabled_icon(painter, checker_rect)
-            return
 
         if self._current_step == self._steps:
-            self._draw_enabled_icon(painter, checker_rect)
-            return
+            return self._get_enabled_icon_path(painter, checker_rect)
+
+        if self._current_step == 0:
+            return self._get_disabled_icon_path(painter, checker_rect)
 
         disabled_step = self._steps - self._current_step
         enabled_step = self._steps - disabled_step
         if enabled_step == disabled_step:
-            self._draw_middle_circle(painter, checker_rect)
-            return
+            return self._get_middle_circle_path(painter, checker_rect)
 
         half_steps = self._steps + 1 - ((self._steps + 1) % 2)
         if enabled_step > disabled_step:
-            self._draw_enabled_icon(
+            return self._get_enabled_icon_path(
                 painter, checker_rect, enabled_step, half_steps
             )
         else:
-            self._draw_disabled_icon(
+            return self._get_disabled_icon_path(
                 painter, checker_rect, disabled_step, half_steps
             )
 
-    def _draw_middle_circle(self, painter, checker_rect):
+    def _get_middle_circle_path(self, painter, checker_rect):
         width = self.icon_path_stroker.width()
-        painter.drawEllipse(checker_rect.center(), width, width)
+        path = QtGui.QPainterPath()
+        path.addEllipse(checker_rect.center(), width, width)
 
-    def _draw_enabled_icon(
+        return path
+
+    def _get_enabled_icon_path(
         self, painter, checker_rect, step=None, half_steps=None
     ):
         fifteenth = checker_rect.height() / 15
@@ -445,9 +447,9 @@ class NiceCheckbox(QtWidgets.QFrame):
         path.lineTo(p3)
 
         stroked_path = self.icon_path_stroker.createStroke(path)
-        painter.drawPath(stroked_path)
+        return stroked_path
 
-    def _draw_disabled_icon(
+    def _get_disabled_icon_path(
         self, painter, checker_rect, step=None, half_steps=None
     ):
         center_point = QtCore.QPointF(
@@ -484,4 +486,4 @@ class NiceCheckbox(QtWidgets.QFrame):
         path.lineTo(line2_p2)
 
         stroked_path = self.icon_path_stroker.createStroke(path)
-        painter.drawPath(stroked_path)
+        return stroked_path
