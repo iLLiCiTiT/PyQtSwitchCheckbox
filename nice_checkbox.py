@@ -307,6 +307,8 @@ class NiceCheckbox(QtWidgets.QFrame):
 
         checker_rect = QtCore.QRect(pos_x, pos_y, checker_size, checker_size)
 
+        under_mouse = self.isEnabled() and self._under_mouse
+
         shadow_x = checker_rect.x()
         shadow_y = checker_rect.y() + margin_size_c
         shadow_size = min(
@@ -334,6 +336,22 @@ class NiceCheckbox(QtWidgets.QFrame):
 
         painter.setBrush(checker_color)
         painter.drawEllipse(checker_rect)
+
+        smaller_checker_rect = checker_rect.adjusted(
+            margin_size_c, margin_size_c, -margin_size_c, -margin_size_c
+        )
+        gradient = QtGui.QLinearGradient(
+            smaller_checker_rect.bottomRight(),
+            smaller_checker_rect.topLeft()
+        )
+        gradient.setColorAt(0, checker_color)
+        if under_mouse:
+            dark_value = 120
+        else:
+            dark_value = 115
+        gradient.setColorAt(1, checker_color.darker(dark_value))
+        painter.setBrush(gradient)
+        painter.drawEllipse(smaller_checker_rect)
 
         if self._draw_icons:
             painter.setBrush(bg_color)
