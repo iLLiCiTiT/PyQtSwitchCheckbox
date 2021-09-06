@@ -12,6 +12,8 @@ class NiceCheckbox(QtWidgets.QFrame):
         self._draw_icons = draw_icons
 
         self._animation_timer = QtCore.QTimer(self)
+        self._fixed_width_set = False
+        self._fixed_height_set = False
 
         self._current_step = None
         self._steps = 20
@@ -54,14 +56,18 @@ class NiceCheckbox(QtWidgets.QFrame):
         new_size.scale(event.size(), QtCore.Qt.KeepAspectRatio)
         self.resize(new_size)
 
-    def setFixedHeight(self, height):
-        super(NiceCheckbox, self).setFixedHeight(height)
-        super(NiceCheckbox, self).setFixedWidth(height * 2)
+    def setFixedHeight(self, *args, **kwargs):
+        self._fixed_height_set = True
+        super(NiceCheckbox, self).setFixedHeight(*args, **kwargs)
 
-    def setFixedWidth(self, width):
-        height = (width - (width % 2)) / 2
-        super(NiceCheckbox, self).setFixedHeight(height)
-        super(NiceCheckbox, self).setFixedWidth(height * 2)
+    def setFixedWidth(self, *args, **kwargs):
+        self._fixed_width_set = True
+        super(NiceCheckbox, self).setFixedWidth(*args, **kwargs)
+
+    def setFixedSize(self, *args, **kwargs):
+        self._fixed_height_set = True
+        self._fixed_width_set = True
+        super(NiceCheckbox, self).setFixedSize(*args, **kwargs)
 
     def steps(self):
         return self._steps
