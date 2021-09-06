@@ -53,6 +53,8 @@ class NiceCheckbox(QtWidgets.QFrame):
 
         self._animation_timer.timeout.connect(self._on_animation_timeout)
 
+        self._base_size = QtCore.QSize(90, 50)
+
     def set_draw_icons(self, draw_icons=None):
         if draw_icons is None:
             draw_icons = not self._draw_icons
@@ -83,17 +85,27 @@ class NiceCheckbox(QtWidgets.QFrame):
                 self.setFixedSize(new_size)
 
     def resizeEvent(self, event):
-        new_size = QtCore.QSize(9, 5)
+        new_size = QtCore.QSize(self._base_size)
         new_size.scale(event.size(), QtCore.Qt.KeepAspectRatio)
         self.resize(new_size)
 
     def setFixedHeight(self, *args, **kwargs):
         self._fixed_height_set = True
         super(NiceCheckbox, self).setFixedHeight(*args, **kwargs)
+        if not self._fixed_width_set:
+            width = (
+                self.height() / self._base_size.height()
+            ) * self._base_size.width()
+            self.setFixedWidth(width)
 
     def setFixedWidth(self, *args, **kwargs):
         self._fixed_width_set = True
         super(NiceCheckbox, self).setFixedWidth(*args, **kwargs)
+        if not self._fixed_height_set:
+            width = (
+                self.width() / self._base_size.width()
+            ) * self._base_size.height()
+            self.setFixedHeight(width)
 
     def setFixedSize(self, *args, **kwargs):
         self._fixed_height_set = True
@@ -149,7 +161,7 @@ class NiceCheckbox(QtWidgets.QFrame):
             self.repaint()
 
     def sizeHint(self):
-        return QtCore.QSize(80, 50)
+        return self._base_size
 
     def mousePressEvent(self, event):
         if event.buttons() & QtCore.Qt.LeftButton:
